@@ -11,3 +11,41 @@
 ### 2. Code Modification Policy
 - **Do not modify Rust programs**: All Rust programs in this project have been audited and should remain unchanged
   - Any essential changes to Rust programs require explicit approval from the security team
+
+  ## Next.js Solana Frontend Rules
+
+### 1. Project Structure
+- Follow Next.js pages router structure for all frontend components
+- Keep blockchain service logic in dedicated service files following the pattern in [services/blockchain.ts](cci:7://file:///home/user/2025-01-pump-science/solana_exampless/solana_tokenize_project/services/blockchain.ts:0:0-0:0)
+
+### 2. Blockchain Service Pattern
+- All Solana interaction functions CAN:
+  - Be defined as `const functionName = async (params) => {}`
+  - Include proper TypeScript typing for all parameters and return values
+  - Export only the functions needed by components at the bottom of the file
+  - Handle errors gracefully with try/catch blocks
+
+### Wallet Adapter Integration
+- Use the Solana Wallet Adapter library included with the Solana frontend scaffold
+
+### RPC Endpoint Management
+- Implement connection pooling to distribute load across multiple RPC endpoints
+- Use appropriate commitment levels based on operation requirements
+- Implement retry mechanisms for failed RPC requests
+- Cache RPC responses when appropriate to reduce endpoint load
+
+### Error Handling and Logging
+- Create standardized error handling for all blockchain operations
+- Implement proper error classification (user errors vs. system errors)
+- Log transaction errors with sufficient context for debugging
+- Provide user-friendly error messages for common transaction failures
+
+### Testing and Development
+- Consider reusing Typescript code from /test/bankrun.ts for the actual frontend also
+- Create separate configurations for devnet, testnet, and mainnet
+- Implement comprehensive testing for all blockchain interactions
+- Use mocks for blockchain services during component testing
+- Document all blockchain interaction functions with examples
+
+### Mobile Considerations
+- Implement responsive design for all blockchain interaction UI components
