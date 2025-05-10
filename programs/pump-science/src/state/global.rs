@@ -123,6 +123,7 @@ impl Global {
         self.initial_real_token_reserves = params.initial_real_token_reserves;
         self.token_total_supply = params.token_total_supply;
         self.migrate_fee_amount = params.migrate_fee_amount;
+        self.migration_token_allocation = params.migration_token_allocation;
         self.fee_receiver = params.fee_receiver;
         self.whitelist_enabled = params.whitelist_enabled;
         self.meteora_config = params.meteora_config;
