@@ -1,6 +1,4 @@
-// Import types will be used when we connect to actual Solana blockchain
-// For now, we'll use mock data to get the UI working
-/*
+// Import types for Solana blockchain interactions
 import {
   Connection,
   PublicKey,
@@ -8,6 +6,8 @@ import {
   clusterApiUrl,
   Transaction,
   SystemProgram,
+  Keypair,
+  sendAndConfirmTransaction
 } from '@solana/web3.js';
 import {
   TOKEN_PROGRAM_ID,
@@ -15,9 +15,14 @@ import {
   getAssociatedTokenAddress,
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
+  createInitializeMintInstruction,
+  createMintToInstruction,
+  MintLayout,
+  getMinimumBalanceForRentExemptMint,
+  createSetAuthorityInstruction,
+  AuthorityType
 } from '@solana/spl-token';
 import bs58 from 'bs58';
-*/
 
 // Types for our token listings
 export interface TokenListing {
@@ -35,6 +40,16 @@ export interface TokenListing {
 
 export type SocialCause = 'Environmental' | 'Educational' | 'Healthcare' | 'Food Security' | 'Other';
 
+export interface CreateTokenParams {
+  name: string;
+  symbol: string;
+  description: string;
+  cause: SocialCause;
+  publicKey: PublicKey; // User's wallet public key
+  signTransaction?: (transaction: Transaction) => Promise<Transaction>;
+  sendTransaction?: (transaction: Transaction, connection: Connection) => Promise<string>;
+}
+
 export interface TokenTransaction {
   signature: string;
   sender: string;
@@ -44,11 +59,18 @@ export interface TokenTransaction {
   transactionLink: string;
 }
 
-// Mock connection function for development
+// Connection function for Solana blockchain
 // In a real implementation, this would use a connection pool for RPC endpoints
 const getConnection = () => {
-  console.log('Using mock connection');
-  return null;
+  // For development, we'll use devnet
+  // In production, implement connection pooling across multiple RPC endpoints
+  try {
+    const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+    return connection;
+  } catch (error) {
+    console.error('Error creating connection:', error);
+    throw new Error('Failed to create connection to Solana network');
+  }
 };
 
 /**
@@ -221,6 +243,67 @@ function decodeAmount(data: string): number {
   return 1000;
 }
 
+/**
+ * Create a new token
+ * @param params Token creation parameters
+ * @returns The mint address of the created token
+ */
+const createToken = async (params: CreateTokenParams): Promise<string> => {
+  try {
+    const { name, symbol, description, cause, publicKey, sendTransaction } = params;
+    
+    // For development, we'll log the action and return a mock mint address
+    console.log(`Creating token: ${name} (${symbol})`);
+    console.log(`Description: ${description}`);
+    console.log(`Social cause: ${cause}`);
+    
+    if (!publicKey) {
+      throw new Error('Wallet not connected');
+    }
+    
+    // In development mode, return a mock mint address
+    // This is for UI development without blockchain integration
+    // Generate a mock mint address that looks like a real one
+    const mockMintAddress = `${symbol.substring(0, 4)}${Math.random().toString(36).substring(2, 10)}111111111111111111111111111111`;
+    
+    // Store token information in local storage for development purposes
+    if (typeof window !== 'undefined') {
+      // Get existing tokens or initialize empty array
+      const existingTokens = JSON.parse(localStorage.getItem('createdTokens') || '[]');
+      
+      // Add new token
+      existingTokens.push({
+        id: existingTokens.length + 1,
+        name,
+        symbol,
+        description,
+        cause,
+        mintAddress: mockMintAddress,
+        price: 0.00001 + Math.random() * 0.0001, // Random initial price
+        priceChange: 0,
+        volume: 0,
+        createdAt: new Date().toISOString(),
+        creator: publicKey.toString()
+      });
+      
+      // Save back to localStorage
+      localStorage.setItem('createdTokens', JSON.stringify(existingTokens));
+    }
+    
+    // In a real implementation, we would:
+    // 1. Create a token mint account
+    // 2. Initialize the mint with decimals
+    // 3. Create an associated token account for the user
+    // 4. Mint initial supply to the user
+    // 5. Optionally freeze the mint authority
+    
+    return mockMintAddress;
+  } catch (error: unknown) {
+    console.error('Error creating token:', error);
+    throw new Error(`Failed to create token: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
 // Export functions for use in components
 export {
   fetchTokenListings,
@@ -228,4 +311,5 @@ export {
   fetchTokenTransactions,
   createBuyTokenTransaction,
   getConnection,
+  createToken,
 };
