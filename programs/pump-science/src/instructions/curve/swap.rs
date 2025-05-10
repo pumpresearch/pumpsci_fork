@@ -20,6 +20,7 @@ pub struct SwapParams {
     pub base_in: bool,
     pub exact_in_amount: u64,
     pub min_out_amount: u64,
+    pub max_sol_in_amount: Option<u64>,
 }
 
 #[event_cpi]
@@ -135,6 +136,7 @@ impl Swap<'_> {
             base_in,
             exact_in_amount,
             min_out_amount,
+            max_sol_in_amount,
         } = params;
 
         msg!(
@@ -211,6 +213,41 @@ impl Swap<'_> {
 
             sol_amount = buy_result.sol_amount;
             token_amount = buy_result.token_amount;
+
+            // Check if this is a last buy scenario (sol_amount has been recalculated)
+            if sol_amount != buy_amount_applied {
+                msg!("Last buy detected, recalculating fee");
+                
+                // Check if the recalculated SOL amount exceeds the maximum allowed
+                if let Some(max_amount) = max_sol_in_amount {
+                    require!(
+                        sol_amount <= max_amount,
+                        ContractError::SlippageExceeded
+                    );
+                }
+                
+                // Recalculate fee based on the actual SOL amount
+                if clock.slot == bonding_curve.start_slot
+                    && ctx.accounts.user.key() == bonding_curve.creator
+                {
+                    // Dev buy still has no fee
+                    fee_lamports = 0;
+                } else {
+                    // Recalculate fee based on the actual SOL amount
+                    fee_lamports = bonding_curve.calculate_fee(sol_amount, clock.slot)?;
+                    msg!("Recalculated Fee: {} SOL", fee_lamports);
+                }
+                
+                // Recheck user's SOL balance with the new total amount
+                let total_sol_needed = sol_amount.checked_add(fee_lamports).ok_or(ContractError::Overflow)?;
+                let rent = Rent::get()?;
+                let min_rent = rent.minimum_balance(0);
+                
+                require!(
+                    ctx.accounts.user.get_lamports() >= total_sol_needed.checked_add(min_rent).unwrap(),
+                    ContractError::InsufficientUserSOL,
+                );
+            }
 
             Swap::complete_buy(&ctx, buy_result.clone(), min_out_amount, fee_lamports)?;
         }
