@@ -130,34 +130,43 @@ pub fn lock_pool(ctx: Context<LockPool>) -> Result<()> {
     let source_tokens = ctx.accounts.payer_pool_lp.clone();
     let lp_mint_amount = ctx.accounts.payer_pool_lp.amount;
 
-    // Create Lock Escrow
-    let escrow_accounts = vec![
-        AccountMeta::new(ctx.accounts.pool.key(), false),
-        AccountMeta::new(ctx.accounts.lock_escrow.key(), false),
-        AccountMeta::new_readonly(ctx.accounts.fee_receiver.key(), false),
-        AccountMeta::new_readonly(ctx.accounts.lp_mint.key(), false),
-        AccountMeta::new(ctx.accounts.bonding_curve_sol_escrow.key(), true), // Bonding Curve Sol Escrow is the payer/signer
-        AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-    ];
+    // Check if lock_escrow account already exists
+    let lock_escrow_info = &ctx.accounts.lock_escrow.to_account_info();
+    let lock_escrow_exists = lock_escrow_info.data_is_empty() == false;
+    
+    // Create Lock Escrow only if it doesn't exist
+    if !lock_escrow_exists {
+        msg!("Creating lock escrow account");
+        let escrow_accounts = vec![
+            AccountMeta::new(ctx.accounts.pool.key(), false),
+            AccountMeta::new(ctx.accounts.lock_escrow.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.fee_receiver.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.lp_mint.key(), false),
+            AccountMeta::new(ctx.accounts.bonding_curve_sol_escrow.key(), true), // Bonding Curve Sol Escrow is the payer/signer
+            AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+        ];
 
-    let escrow_instruction = Instruction {
-        program_id: meteora_program_id,
-        accounts: escrow_accounts,
-        data: get_function_hash("global", "create_lock_escrow").into(),
-    };
+        let escrow_instruction = Instruction {
+            program_id: meteora_program_id,
+            accounts: escrow_accounts,
+            data: get_function_hash("global", "create_lock_escrow").into(),
+        };
 
-    invoke_signed(
-        &escrow_instruction,
-        &[
-            ctx.accounts.pool.to_account_info(),
-            ctx.accounts.lock_escrow.to_account_info(),
-            ctx.accounts.fee_receiver.to_account_info(),
-            ctx.accounts.lp_mint.to_account_info(),
-            ctx.accounts.bonding_curve_sol_escrow.to_account_info(), // Bonding Curve Sol Escrow is the payer/signer
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        bonding_curve_sol_escrow_signer_seeds,
-    )?;
+        invoke_signed(
+            &escrow_instruction,
+            &[
+                ctx.accounts.pool.to_account_info(),
+                ctx.accounts.lock_escrow.to_account_info(),
+                ctx.accounts.fee_receiver.to_account_info(),
+                ctx.accounts.lp_mint.to_account_info(),
+                ctx.accounts.bonding_curve_sol_escrow.to_account_info(), // Bonding Curve Sol Escrow is the payer/signer
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            bonding_curve_sol_escrow_signer_seeds,
+        )?;
+    } else {
+        msg!("Lock escrow account already exists, skipping creation");
+    }
 
     associated_token::create_idempotent(CpiContext::new(
         ctx.accounts.associated_token_program.to_account_info(),
