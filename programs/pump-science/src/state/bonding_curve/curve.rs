@@ -298,16 +298,23 @@ impl BondingCurve {
         let tkn_balance = tkn_account.amount;
         let sol_escrow_lamports = sol_escrow.lamports();
 
-        // let rent_exemption_balance: u64 =
-        //     Rent::get()?.minimum_balance(8 + BondingCurve::INIT_SPACE as usize);
-        // let bonding_curve_pool_lamports: u64 = lamports - rent_exemption_balance;
+        // Calculate rent exemption for the SOL escrow account
+        let rent_exemption_balance: u64 =
+            Rent::get()?.minimum_balance(0); // SOL escrow is a system account with no data
+        
+        // Subtract rent from sol_escrow_lamports to get the actual available SOL
+        let sol_escrow_available_lamports = sol_escrow_lamports
+            .checked_sub(rent_exemption_balance)
+            .ok_or(ContractError::ArithmeticError)?;
 
-        // Ensure real sol reserves are equal to bonding curve pool lamports
-        if sol_escrow_lamports < bonding_curve.real_sol_reserves {
+        // Ensure real sol reserves are equal to bonding curve pool lamports (excluding rent)
+        if sol_escrow_available_lamports < bonding_curve.real_sol_reserves {
             msg!(
-                "real_sol_r:{}, bonding_lamps:{}",
+                "real_sol_r:{}, sol_escrow_lamports:{}, available_lamports:{}, rent:{}",
                 bonding_curve.real_sol_reserves,
-                sol_escrow_lamports
+                sol_escrow_lamports,
+                sol_escrow_available_lamports,
+                rent_exemption_balance
             );
             msg!("Invariant failed: real_sol_reserves != bonding_curve_pool_lamports");
             return Err(ContractError::BondingCurveInvariant.into());
