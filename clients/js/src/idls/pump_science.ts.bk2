@@ -794,6 +794,26 @@ export type PumpScience = {
       }
     },
     {
+      "name": "GlobalAuthorityInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "migrationAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "GlobalSettingsInput",
       "type": {
         "kind": "struct",
@@ -2048,6 +2068,26 @@ export const IDL: PumpScience = {
             "name": "startSlot",
             "type": {
               "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalAuthorityInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "migrationAuthority",
+            "type": {
+              "option": "publicKey"
             }
           }
         ]

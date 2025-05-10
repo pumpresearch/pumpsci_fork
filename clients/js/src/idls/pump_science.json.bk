@@ -757,12 +757,6 @@
           {
             "name": "minOutAmount",
             "type": "u64"
-          },
-          {
-            "name": "maxSolInAmount",
-            "type": {
-              "option": "u64"
-            }
           }
         ]
       }
@@ -788,6 +782,26 @@
             "name": "startSlot",
             "type": {
               "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalAuthorityInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "migrationAuthority",
+            "type": {
+              "option": "publicKey"
             }
           }
         ]
@@ -844,41 +858,41 @@
   ],
   "events": [
     {
-      "name": "CompleteEvent",
+      "name": "GlobalUpdateEvent",
       "fields": [
         {
-          "name": "user",
+          "name": "globalAuthority",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "mint",
+          "name": "migrationAuthority",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "virtualSolReserves",
+          "name": "initialVirtualTokenReserves",
           "type": "u64",
           "index": false
         },
         {
-          "name": "virtualTokenReserves",
+          "name": "initialVirtualSolReserves",
           "type": "u64",
           "index": false
         },
         {
-          "name": "realSolReserves",
+          "name": "initialRealTokenReserves",
           "type": "u64",
           "index": false
         },
         {
-          "name": "realTokenReserves",
+          "name": "tokenTotalSupply",
           "type": "u64",
           "index": false
         },
         {
-          "name": "timestamp",
-          "type": "i64",
+          "name": "mintDecimals",
+          "type": "u8",
           "index": false
         }
       ]
@@ -944,41 +958,36 @@
       ]
     },
     {
-      "name": "GlobalUpdateEvent",
+      "name": "WithdrawEvent",
       "fields": [
         {
-          "name": "globalAuthority",
+          "name": "withdrawAuthority",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "migrationAuthority",
+          "name": "mint",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "initialVirtualTokenReserves",
+          "name": "feeVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawn",
           "type": "u64",
           "index": false
         },
         {
-          "name": "initialVirtualSolReserves",
+          "name": "totalWithdrawn",
           "type": "u64",
           "index": false
         },
         {
-          "name": "initialRealTokenReserves",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "tokenTotalSupply",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "mintDecimals",
-          "type": "u8",
+          "name": "withdrawTime",
+          "type": "i64",
           "index": false
         }
       ]
@@ -1044,10 +1053,10 @@
       ]
     },
     {
-      "name": "WithdrawEvent",
+      "name": "CompleteEvent",
       "fields": [
         {
-          "name": "withdrawAuthority",
+          "name": "user",
           "type": "publicKey",
           "index": false
         },
@@ -1057,22 +1066,27 @@
           "index": false
         },
         {
-          "name": "feeVault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "withdrawn",
+          "name": "virtualSolReserves",
           "type": "u64",
           "index": false
         },
         {
-          "name": "totalWithdrawn",
+          "name": "virtualTokenReserves",
           "type": "u64",
           "index": false
         },
         {
-          "name": "withdrawTime",
+          "name": "realSolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "realTokenReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
           "type": "i64",
           "index": false
         }
@@ -1255,5 +1269,11 @@
       "name": "InvalidParameter",
       "msg": "Invalid Parameter"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "EtZR9gh25YUM6LkL2o2yYV1KzyuDdftHvYk3wsb2Ypkj",
+    "origin": "anchor",
+    "binaryVersion": "0.29.0",
+    "libVersion": "0.29.0"
+  }
 }

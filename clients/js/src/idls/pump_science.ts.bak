@@ -757,12 +757,6 @@ export type PumpScience = {
           {
             "name": "minOutAmount",
             "type": "u64"
-          },
-          {
-            "name": "maxSolInAmount",
-            "type": {
-              "option": "u64"
-            }
           }
         ]
       }
@@ -788,6 +782,26 @@ export type PumpScience = {
             "name": "startSlot",
             "type": {
               "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalAuthorityInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "migrationAuthority",
+            "type": {
+              "option": "publicKey"
             }
           }
         ]
@@ -2017,12 +2031,6 @@ export const IDL: PumpScience = {
           {
             "name": "minOutAmount",
             "type": "u64"
-          },
-          {
-            "name": "maxSolInAmount",
-            "type": {
-              "option": "u64"
-            }
           }
         ]
       }
@@ -2048,6 +2056,26 @@ export const IDL: PumpScience = {
             "name": "startSlot",
             "type": {
               "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalAuthorityInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "globalAuthority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "migrationAuthority",
+            "type": {
+              "option": "publicKey"
             }
           }
         ]
