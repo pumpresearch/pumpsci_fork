@@ -3,6 +3,8 @@ spec_content = """
 
 ## Overview
 
+CryptoChange.meme is a fork of Pump.science. While the following specs were correct initially, they might be changed while the fork is being developed.
+
 Pump Science is a Solana-based protocol implementing an advanced bonding curve mechanism with automated liquidity management and dynamic fee structures. The protocol enables the creation and management of token markets with predictable pricing and liquidity.
 
 ## Core Components

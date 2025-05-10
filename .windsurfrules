@@ -49,3 +49,7 @@
 
 ### Mobile Considerations
 - Implement responsive design for all blockchain interaction UI components
+
+### Specifications
+Considering checking the specs folder from the root of the project for any additional details on the design and pump.science protocol from which this fork is based.
+
