@@ -104,6 +104,7 @@ impl Swap<'_> {
             base_in: _,
             exact_in_amount,
             min_out_amount: _,
+            max_sol_in_amount: _,
         } = params;
         let clock = Clock::get()?;
 
@@ -153,7 +154,7 @@ impl Swap<'_> {
 
         let sol_amount: u64;
         let token_amount: u64;
-        let fee_lamports: u64;
+        let mut fee_lamports: u64;
 
         if base_in {
             // Sell tokens
@@ -239,7 +240,7 @@ impl Swap<'_> {
                 }
                 
                 // Recheck user's SOL balance with the new total amount
-                let total_sol_needed = sol_amount.checked_add(fee_lamports).ok_or(ContractError::Overflow)?;
+                let total_sol_needed = sol_amount.checked_add(fee_lamports).ok_or(ContractError::ArithmeticError)?;
                 let rent = Rent::get()?;
                 let min_rent = rent.minimum_balance(0);
                 
