@@ -1,19 +1,17 @@
 [toolchain]
 
 [features]
-resolution = true
+seeds = false
 skip-lint = false
 
-
-
 [programs.localnet]
-pump_science = "6xyCEeyVb1RzDB9Tq6jNfMaCAGvzdWJg6K7rRhjNR4fk"
+pump_science = "G9sh8zEyXBzXRhRUj5nwbjQPNaeu1uPE7g5UBRNSs17Y"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "Localnet"
 wallet = "./devnet-deployer.json"
 
 [scripts]

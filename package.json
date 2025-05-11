@@ -3,6 +3,7 @@
         "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
         "programs:build": "./configs/scripts/program/build.sh",
+        "programs:rebuild": "./configs/scripts/program/rebuild.sh",
         "programs:test": "RUST_LOG=error ./configs/scripts/program/test.sh",
         "programs:debug": "./configs/scripts/program/test.sh",
         "programs:clean": "./configs/scripts/program/clean.sh",
