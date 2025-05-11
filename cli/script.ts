@@ -12,14 +12,14 @@ import { ComputeBudgetProgram, Transaction, PublicKey, SYSVAR_RENT_PUBKEY, Syste
 import VaultImpl, { getVaultPdas } from '@mercurial-finance/vault-sdk';
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, NATIVE_MINT, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import AmmImpl, { PROGRAM_ID } from '@mercurial-finance/dynamic-amm-sdk';
-import { IDL, PumpScience } from '../target/types/pump_science';
+// We'll load the IDL using fs instead of direct import
 import { vault, derivePoolAddressWithConfig, createProgram, getOrCreateATAInstruction, deriveMintMetadata, wrapSOLInstruction, deriveLockEscrowPda } from './util'
 import { SEEDS } from '@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/constants';
 import { METAPLEX_PROGRAM } from '@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/constants';
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes';
 
 let solConnection: web3.Connection = null;
-let program: anchor.Program<PumpScience> = null;
+let program: anchor.Program = null;
 let provider: anchor.Provider = null;
 let payer: NodeWallet = null;
 let umi: Umi;
@@ -65,7 +65,15 @@ export const setClusterConfig = async (
     umi = createUmi(rpcUrl).use(web3JsRpc(provider.connection));
 
     // Generate the program client from IDL.
-    program = new anchor.Program(IDL as PumpScience, programId);
+    // Load the IDL from the file system
+    try {
+        const idlFile = fs.readFileSync('../target/idl/pump_science.json', 'utf8');
+        const idl = JSON.parse(idlFile);
+        program = new anchor.Program(idl, programId);
+    } catch (error) {
+        console.error('Error loading IDL file:', error);
+        throw error;
+    }
 }
 
 export const global = async () => {
