@@ -4,7 +4,7 @@ import {
 import { none, publicKey } from "@metaplex-foundation/umi";
 import { CreateBondingCurveInstructionArgs } from "./generated";
 
-export const FEE_RECEIVER = publicKey("3bM4hewuZFZgNXvLWwaktXMa8YHgxsnnhaRfzxJV944P");
+export const FEE_RECEIVER = publicKey("6kwUs4F8hsDDVQUSqd1WuzY8LZhKnPKEA5La8HRkCQjf");
 export const METEORA_CONFIG = publicKey("FiENCCbPi3rFh5pW2AJ59HC53yM32eLaCjMKxRqanKFJ");
 
 export const TOKEN_DECIMALS = 6; // 6 decimals

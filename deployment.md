@@ -1,0 +1,3 @@
+1. Change CREATION_AUTHORITY_PUBKEY in programs/pump-science/src/constants.rs
+2. Change the fee_receiver in ...
+3. Set proper meteorra_config according to the cluster

@@ -42,10 +42,9 @@
 - Provide user-friendly error messages for common transaction failures
 
 ### Testing and Development
-- Consider reusing Typescript code from /test/bankrun.ts for the actual frontend also
+- Consider reusing Typescript code under clients and /test/bankrun.ts for the actual frontend also; for example, the SDK folder thereunder was copied and pasted into the web folder for frontend development, and should be favored for reuse
 - Create separate configurations for devnet, testnet, and mainnet
 - Implement comprehensive testing for all blockchain interactions
-- Use mocks for blockchain services during component testing
 - Document all blockchain interaction functions with examples
 
 ### Mobile Considerations
