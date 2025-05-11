@@ -2,6 +2,9 @@ import React from 'react';
 import { fetchTokenByMint, fetchTokenTransactions } from '@/services/blockchain';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import TokenHeader from '@/components/token/TokenHeader';
+import GeckoTerminalChart from '@/components/token/GeckoTerminalChart';
+import BondingCurveVisualization from '@/components/token/BondingCurveVisualization';
 
 // Define the props for the page component
 interface TokenDetailPageProps {
@@ -38,29 +41,12 @@ export default async function TokenDetailPage({ params }: TokenDetailPageProps) 
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-green-50 dark:from-amber-950 dark:to-green-950 py-16">
       <div className="container mx-auto px-4">
         {/* Token Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                {token.name} <span className="text-xl text-gray-500 dark:text-gray-400">({token.symbol})</span>
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Mint Address: <span className="font-mono">{token.mintAddress.substring(0, 8)}...{token.mintAddress.substring(token.mintAddress.length - 8)}</span>
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <span className="px-4 py-2 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                {token.cause}
-              </span>
-              <Link href={`https://dexscreener.com/solana/${token.mintAddress}`} target="_blank">
-                <Button variant="outline" size="sm" className="text-gray-600 dark:text-gray-400">
-                  DEX Screener
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <TokenHeader
+          name={token.name}
+          symbol={token.symbol}
+          mintAddress={token.mintAddress}
+          cause={token.cause}
+        />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Token Info & Social Impact */}
@@ -112,12 +98,19 @@ export default async function TokenDetailPage({ params }: TokenDetailPageProps) 
           
           {/* Right Column: Trading Interface & Transactions */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Price Chart with GeckoTerminal Integration */}
+            <GeckoTerminalChart 
+              mintAddress={token.mintAddress}
+              symbol={token.symbol}
+              height="400px"
+            />
+            
             {/* Trading Interface */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Trading Interface</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="p-4 bg-amber-50 dark:bg-green-900/20 rounded-lg border border-amber-200 dark:border-green-800">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Current Price</p>
                   <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                     ${token.price.toFixed(6)}
@@ -127,7 +120,7 @@ export default async function TokenDetailPage({ params }: TokenDetailPageProps) 
                   </p>
                 </div>
                 
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="p-4 bg-amber-50 dark:bg-green-900/20 rounded-lg border border-amber-200 dark:border-green-800">
                   <p className="text-sm text-gray-500 dark:text-gray-400">24h Volume</p>
                   <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                     ${token.volume.toLocaleString()}
@@ -135,20 +128,12 @@ export default async function TokenDetailPage({ params }: TokenDetailPageProps) 
                 </div>
               </div>
               
-              {/* Bonding Curve Visualization */}
-              <div className="mb-6">
-                <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Bonding Curve</h3>
-                <div className="h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-amber-500" 
-                    style={{ width: '65%' }}
-                  ></div>
-                </div>
-                <div className="flex justify-between mt-1">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">0%</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">65% Complete</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">100%</span>
-                </div>
+              {/* Enhanced Bonding Curve Visualization */}
+              <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-amber-200 dark:border-green-800">
+                <BondingCurveVisualization 
+                  completionPercentage={65} 
+                  tokenSymbol={token.symbol}
+                />
               </div>
               
               {/* Buy/Sell Interface */}
@@ -188,7 +173,7 @@ export default async function TokenDetailPage({ params }: TokenDetailPageProps) 
             </div>
             
             {/* Transaction History */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-amber-200 dark:border-green-800">
               <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Recent Transactions</h2>
               
               {transactions.length === 0 ? (
