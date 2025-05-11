@@ -31,12 +31,12 @@ fi
 WORKING_DIR=$(pwd)
 export SBF_OUT_DIR="${WORKING_DIR}/${OUTPUT}"
 
-# First, ensure we have the target directory
-mkdir -p ./programs/pump-science/target/deploy/
+# First, ensure we have the target directory at the project root
+mkdir -p ./target/deploy/
 
-# Backup the existing keypair if it exists
-if [ -f "./programs/pump-science/target/deploy/pump_science-keypair.json" ]; then
-    cp ./programs/pump-science/target/deploy/pump_science-keypair.json ${OUTPUT}/pump_science-keypair.json.bak
+# Backup the existing keypair if it exists in the root target/deploy
+if [ -f "./target/deploy/pump_science-keypair.json" ]; then
+    cp ./target/deploy/pump_science-keypair.json ${OUTPUT}/pump_science-keypair.json.bak
 fi
 
 # Build the program
@@ -57,9 +57,9 @@ else
     echo "No existing keypair found, using newly generated one"
 fi
 
-# Copy the built files to the target directory
-cp ${OUTPUT}/pump_science.so ./programs/pump-science/target/deploy/
-cp ${OUTPUT}/pump_science-keypair.json ./programs/pump-science/target/deploy/
+# Copy the built files to the root target/deploy directory
+cp ${OUTPUT}/pump_science.so ./target/deploy/
+cp ${OUTPUT}/pump_science-keypair.json ./target/deploy/
 
-echo "Build complete. Program files copied to target directory."
-echo "You may now run 'anchor deploy' to deploy the program."
+echo "Build complete. Program files copied to ./target/deploy/ directory."
+echo "You may now run 'anchor deploy' from the project root to deploy the program."

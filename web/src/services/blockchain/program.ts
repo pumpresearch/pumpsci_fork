@@ -6,7 +6,7 @@ import { PUMP_SCIENCE_IDL_TYPED, PumpScienceIDL } from './types';
 // Program ID for the Pump Science program
 // Note: This should be updated with the actual deployed program ID
 export const PUMP_SCIENCE_PROGRAM_ID = new PublicKey(
-  'PumpScienceProgramID111111111111111111111111'
+  'G9sh8zEyXBzXRhRUj5nwbjQPNaeu1uPE7g5UBRNSs17Y'
 );
 
 /**
