@@ -204,7 +204,7 @@ export default async function TokenDetailPage({ params }: TokenDetailPageProps) 
                       </tr>
                     </thead>
                     <tbody>
-                      {transactions.map((tx) => (
+                      {transactions.map((tx: any) => (
                         <tr key={tx.signature} className="border-b border-gray-200 dark:border-gray-700">
                           <td className="px-4 py-3 whitespace-nowrap">
                             <a 

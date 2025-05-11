@@ -1,17 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { WalletButton } from '@/components/solana/solana-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
 import { createToken, SocialCause } from '@/services/blockchain'
+import { uploadToIPFS, uploadTokenMetadata } from '@/services/ipfs'
 
 export default function CreateCoinPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [name, setName] = useState('')
   const [symbol, setSymbol] = useState('')
@@ -20,10 +23,82 @@ export default function CreateCoinPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [mintAddress, setMintAddress] = useState<string | null>(null)
+  
+  // Image upload state
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [metadataUri, setMetadataUri] = useState<string | null>(null)
   
   // Mock wallet connection state for development
   const [walletConnected, setWalletConnected] = useState(false)
 
+  // Handle image selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file')
+      return
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size should be less than 5MB')
+      return
+    }
+    
+    setSelectedImage(file)
+    
+    // Create preview URL
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+    
+    // Clear any previous errors
+    setError(null)
+  }
+  
+  // Upload image to IPFS
+  const uploadImage = async (): Promise<string | null> => {
+    if (!selectedImage) return null
+    
+    try {
+      setIsUploading(true)
+      setUploadProgress(10)
+      
+      // Upload image to IPFS
+      const imageHash = await uploadToIPFS(selectedImage, `${name} Image`)
+      setUploadProgress(50)
+      
+      // Create and upload metadata
+      const metadata = {
+        name,
+        symbol,
+        description,
+        cause,
+        image: `ipfs://${imageHash}`
+      }
+      
+      const metadataUri = await uploadTokenMetadata(metadata)
+      setUploadProgress(100)
+      setMetadataUri(metadataUri)
+      
+      return metadataUri
+    } catch (error: unknown) {
+      console.error('Error uploading image:', error)
+      throw error
+    } finally {
+      setIsUploading(false)
+    }
+  }
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -49,21 +124,31 @@ export default function CreateCoinPage() {
       setError(null)
       setSuccess(null)
       
+      // Upload image and metadata if an image is selected
+      let tokenMetadataUri = null
+      if (selectedImage) {
+        tokenMetadataUri = await uploadImage()
+      }
+      
       // Create token with mock wallet data
       const mockPublicKey = { toString: () => '5FHwkrdxD5AKmY1sdDdxvKFcGy5uyy7Jh3RhHToJNYhV' }
       
-      const mintAddress = await createToken({
+      const mintAddress = await createToken(
         name,
         symbol,
         description,
         cause,
-        publicKey: mockPublicKey as any
-      })
+        tokenMetadataUri || "ipfs://placeholder",
+        mockPublicKey as any
+      );
+
+      setMintAddress(mintAddress);
       
       setSuccess(`Token created successfully! Mint address: ${mintAddress}`)
       
       // Show success message in console
       console.log(`Token ${name} (${symbol}) created successfully!`)
+      console.log(`Metadata URI: ${tokenMetadataUri || 'None'}`)
       
       // Redirect to token page after a short delay
       setTimeout(() => {
@@ -82,10 +167,24 @@ export default function CreateCoinPage() {
     setWalletConnected(!walletConnected)
   }
 
+  // Trigger file input click
+  const triggerFileInput = () => {
+    fileInputRef.current?.click()
+  }
+  
+  // Clear selected image
+  const clearImage = () => {
+    setSelectedImage(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+  
   return (
-    <div className="container max-w-3xl py-10">
-      <h1 className="text-3xl font-bold mb-6">Create a New Coin</h1>
-      <p className="text-gray-600 mb-8">
+    <div className="container max-w-3xl py-10 mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center">Create a New Coin</h1>
+      <p className="text-gray-600 mb-8 text-center">
         Launch your own memecoin with a purpose. A portion of all trading fees will go towards your selected social cause.
       </p>
       
@@ -184,16 +283,77 @@ export default function CreateCoinPage() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="image">Token Image (Coming Soon)</Label>
-            <Input
+            <Label htmlFor="image">Token Image</Label>
+            <input
+              ref={fileInputRef}
               id="image"
               type="file"
               accept="image/*"
-              disabled
+              onChange={handleImageChange}
+              className="hidden"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Token image upload will be available in a future update.
-            </p>
+            
+            <div className="border border-gray-300 rounded-md p-4 flex flex-col items-center justify-center">
+              {imagePreview ? (
+                <div className="relative w-full">
+                  <div className="relative w-32 h-32 mx-auto mb-2 rounded-full overflow-hidden border-2 border-blue-500">
+                    <Image 
+                      src={imagePreview} 
+                      alt="Token preview" 
+                      fill 
+                      style={{ objectFit: 'cover' }} 
+                    />
+                  </div>
+                  <div className="flex justify-center gap-2 mt-2">
+                    <Button 
+                      type="button" 
+                      onClick={triggerFileInput}
+                      className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3"
+                    >
+                      Change
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={clearImage}
+                      className="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div 
+                  onClick={triggerFileInput}
+                  className="w-full h-32 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 rounded-md"
+                >
+                  <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500">Click to upload token image</p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG or GIF (max 5MB)</p>
+                </div>
+              )}
+            </div>
+            
+            {isUploading && (
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 flex items-center">
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                  Uploading to IPFS: {uploadProgress}%
+                </p>
+              </div>
+            )}
+            
+            {metadataUri && (
+              <div className="mt-2 flex items-center text-green-600 text-xs">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Metadata uploaded to IPFS
+              </div>
+            )}
           </div>
         </div>
         
@@ -201,9 +361,19 @@ export default function CreateCoinPage() {
           <Button
             type="submit"
             className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md"
-            disabled={isCreating || !walletConnected}
+            disabled={isCreating || isUploading || !walletConnected}
           >
-            {isCreating ? 'Creating Token...' : 'Create Token'}
+            {isCreating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Creating Token...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4 mr-2" />
+                Create Token
+              </>
+            )}
           </Button>
           
           {walletConnected && (

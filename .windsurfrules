@@ -15,8 +15,9 @@
   ## Next.js Solana Frontend Rules
 
 ### 1. Project Structure
+- The frontend aims to integrate the Solana program created under the programs folder. The IDL and Typescript types are located in clients/js/src/idls
 - Follow Next.js pages router structure for all frontend components
-- Keep blockchain service logic in dedicated service files following the pattern in [services/blockchain.ts](cci:7://file:///home/user/2025-01-pump-science/solana_exampless/solana_tokenize_project/services/blockchain.ts:0:0-0:0)
+- Keep blockchain service logic in dedicated service files
 
 ### 2. Blockchain Service Pattern
 - All Solana interaction functions CAN:
@@ -53,3 +54,5 @@
 ### Specifications
 Considering checking the specs folder from the root of the project for any additional details on the design and pump.science protocol from which this fork is based.
 
+# Important
+Regularly consult the solana_examples folder to consider frontend examples avoiding issues, and remember to use the MCP server for questions when in doubt about Solana practices.
