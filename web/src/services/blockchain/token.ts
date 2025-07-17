@@ -1,4 +1,4 @@
-import { PublicKey, Connection } from '@solana/web3.js';
+import { PublicKey, Connection, TransactionInstruction, Keypair } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import { TokenListing, TokenTransaction, SocialCause } from './types';
 import { getConnection } from './connection';
@@ -14,7 +14,7 @@ import { PUMP_SCIENCE_PROGRAM_ID } from './program';
  * @param cause Social cause category
  * @param metadataUri IPFS URI for token metadata
  * @param publicKey User's wallet public key
- * @returns The newly created token's mint address
+ * @returns The newly created token's mint address and transaction instruction
  */
 export const createToken = async (
   name: string,
@@ -25,10 +25,10 @@ export const createToken = async (
   publicKey: PublicKey,
   signTransaction?: (transaction: any) => Promise<any>,
   sendTransaction?: (transaction: any, connection: any) => Promise<string>
-): Promise<string> => {
+): Promise<{ instruction: TransactionInstruction; mintKeypair: Keypair; mint: string }> => {
   try {
     // Use the existing createBondingCurve function with the provided parameters
-    const mintAddress = await createBondingCurve({
+    const result = await createBondingCurve({
       name,
       symbol,
       uri: metadataUri,
@@ -37,8 +37,8 @@ export const createToken = async (
       sendTransaction
     });
 
-    // Return the mint address as a string
-    return mintAddress.toString();
+    // Return the instruction and mint info for frontend to handle
+    return result;
   } catch (error) {
     console.error('Error creating token:', error);
     throw error;

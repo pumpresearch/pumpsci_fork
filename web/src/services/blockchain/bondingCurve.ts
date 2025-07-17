@@ -1,9 +1,12 @@
 import { 
   PublicKey, 
   Transaction, 
+  TransactionInstruction,
   Connection,
   SystemProgram,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
+  VersionedTransaction,
+  Keypair
 } from '@solana/web3.js';
 import { AnchorProvider, BN, Program, Wallet, web3 } from '@coral-xyz/anchor';
 import { 
@@ -31,7 +34,7 @@ import { safeSignTransaction, safeSendTransaction, safeConnection } from './comp
 // @ts-ignore - Ignoring TypeScript errors due to web3.js version conflicts
 export const createBondingCurve = async (
   params: CreateBondingCurveParams
-): Promise<string> => {
+): Promise<{ instruction: TransactionInstruction; mintKeypair: Keypair; mint: string }> => {
   try {
     const { 
       name, 
@@ -44,11 +47,17 @@ export const createBondingCurve = async (
     } = params;
 
     // Create a wallet adapter for the provider
-    const wallet: Wallet = {
+    const wallet = {
       publicKey,
-      signTransaction: signTransaction || (() => Promise.reject(new Error('Sign transaction not implemented'))),
+      signTransaction: signTransaction 
+        ? <T extends Transaction | VersionedTransaction>(tx: T): Promise<T> => {
+            return signTransaction(tx as Transaction) as Promise<T>;
+          }
+        : <T extends Transaction | VersionedTransaction>(tx: T): Promise<T> => {
+            return Promise.reject(new Error('Sign transaction not implemented'));
+          },
       signAllTransactions: () => Promise.reject(new Error('Sign all transactions not implemented')),
-    };
+    } as any; // Use any to bypass strict typing for wallet adapter
 
     // Get connection and create provider
     const connection = getConnection();
@@ -89,9 +98,10 @@ export const createBondingCurve = async (
         // Check if whitelist exists
         await program.account.whitelist.fetch(whitelistAddress);
         whitelist = whitelistAddress;
+        console.log('User is whitelisted, whitelist account:', whitelistAddress.toString());
       } catch (error) {
-        console.warn('Whitelist not found for creator:', publicKey.toString());
-        // If whitelist is enabled but user is not whitelisted, this will fail at the program level
+        console.error('Whitelist is enabled but user is not whitelisted:', publicKey.toString());
+        throw new Error('Whitelist is enabled but you are not whitelisted. Please contact the administrator to be added to the whitelist.');
       }
     }
 
@@ -103,17 +113,15 @@ export const createBondingCurve = async (
       startSlot: startSlot || null
     };
 
-    // Create the transaction
-    const transaction = await program.methods
-      .createBondingCurve(createBondingCurveParams)
-      .accounts({
+    // Create the accounts object with proper typing
+    const accounts = {
         mint,
         creator: publicKey,
         bondingCurve,
         bondingCurveTokenAccount,
         bondingCurveSolEscrow,
         global: globalState,
-        whitelist: whitelist || undefined, // Optional account
+      whitelist: whitelist || getPumpScienceProgram(provider).programId, // Pass programId if no whitelist
         metadata,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -121,24 +129,22 @@ export const createBondingCurve = async (
         tokenMetadataProgram: METADATA_PROGRAM_ID,
         rent: SYSVAR_RENT_PUBKEY,
         eventAuthority: program.programId,
-        program: program.programId
-      })
+      program: program.programId,
+    };
+
+    // Create the transaction
+    const transaction = await program.methods
+      .createBondingCurve(createBondingCurveParams)
+      .accounts(accounts)
       .signers([mintKeypair])
-      .transaction();
+      .instruction(); // Get instruction instead of full transaction
 
-    // Sign and send the transaction
-    let txid: string;
-    if (sendTransaction) {
-      txid = await safeSendTransaction(sendTransaction, transaction, connection);
-    } else if (signTransaction) {
-      const signedTx = await safeSignTransaction(signTransaction, transaction);
-      txid = await withRetry(() => connection.sendRawTransaction(signedTx.serialize()));
-    } else {
-      throw new Error('No transaction signing method provided');
-    }
-
-    console.log(`Created bonding curve for token ${name} (${symbol}), mint: ${mint.toString()}, txid: ${txid}`);
-    return mint.toString(); // Return the mint address as a string
+    // Return the transaction instruction and mint keypair for frontend to handle
+    return {
+      instruction: transaction,
+      mintKeypair,
+      mint: mint.toString()
+    };
   } catch (error) {
     console.error('Error creating bonding curve:', error);
     const blockchainError = handleBlockchainError(error);
