@@ -9,7 +9,7 @@ export function FooterSection() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">cryptochange.meme</h3>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">Pump Charity</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Creating memecoins with purpose, redirecting fees to social causes.
             </p>
@@ -113,7 +113,7 @@ export function FooterSection() {
         
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} cryptochange.meme. All rights reserved.
+            &copy; {new Date().getFullYear()} Pump Charity. All rights reserved.
           </p>
         </div>
       </div>

@@ -18,7 +18,7 @@ export function HomeFeature() {
             How We Make a Difference
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-12">
-            At cryptochange.meme, we redirect a significant portion of trading fees to social causes, 
+            At Pump Charity, we redirect a significant portion of trading fees to social causes, 
             creating a positive impact with every transaction.
           </p>
           

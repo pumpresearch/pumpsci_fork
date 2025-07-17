@@ -20,7 +20,7 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
       <div className="mx-auto flex justify-between items-center">
         <div className="flex items-baseline gap-4">
           <Link className="text-xl hover:text-neutral-500 dark:hover:text-white" href="/">
-            <span className="font-semibold bg-gradient-to-r from-green-600 to-amber-500 dark:from-green-400 dark:to-amber-300 text-transparent bg-clip-text">cryptochange.meme</span>
+            <span className="font-semibold bg-gradient-to-r from-green-600 to-amber-500 dark:from-green-400 dark:to-amber-300 text-transparent bg-clip-text">Pump Charity</span>
           </Link>
           <div className="hidden md:flex items-center">
             <ul className="flex gap-4 flex-nowrap items-center">
